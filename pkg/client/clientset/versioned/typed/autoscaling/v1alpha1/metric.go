@@ -37,15 +37,15 @@ type MetricsGetter interface {
 
 // MetricInterface has methods to work with Metric resources.
 type MetricInterface interface {
-	Create(*v1alpha1.Metric) (*v1alpha1.Metric, error)
-	Update(*v1alpha1.Metric) (*v1alpha1.Metric, error)
-	UpdateStatus(*v1alpha1.Metric) (*v1alpha1.Metric, error)
-	Delete(name string, options *v1.DeleteOptions) error
-	DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
-	Get(name string, options v1.GetOptions) (*v1alpha1.Metric, error)
-	List(opts v1.ListOptions) (*v1alpha1.MetricList, error)
-	Watch(opts v1.ListOptions) (watch.Interface, error)
-	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.Metric, err error)
+	Create(ctx context.Context, *v1alpha1.Metric) (*v1alpha1.Metric, error)
+	Update(ctx context.Context, *v1alpha1.Metric) (*v1alpha1.Metric, error)
+	UpdateStatus(ctx context.Context, *v1alpha1.Metric) (*v1alpha1.Metric, error)
+	Delete(ctx context.Context, name string, options *v1.DeleteOptions) error
+	DeleteCollection(ctx context.Context, options *v1.DeleteOptions, listOptions v1.ListOptions) error
+	Get(ctx context.Context, name string, options v1.GetOptions) (*v1alpha1.Metric, error)
+	List(ctx context.Context, opts v1.ListOptions) (*v1alpha1.MetricList, error)
+	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.Metric, err error)
 	MetricExpansion
 }
 
@@ -64,20 +64,20 @@ func newMetrics(c *AutoscalingV1alpha1Client, namespace string) *metrics {
 }
 
 // Get takes name of the metric, and returns the corresponding metric object, and an error if there is any.
-func (c *metrics) Get(name string, options v1.GetOptions) (result *v1alpha1.Metric, err error) {
+func (c *metrics) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.Metric, err error) {
 	result = &v1alpha1.Metric{}
 	err = c.client.Get().
 		Namespace(c.ns).
 		Resource("metrics").
 		Name(name).
 		VersionedParams(&options, scheme.ParameterCodec).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // List takes label and field selectors, and returns the list of Metrics that match those selectors.
-func (c *metrics) List(opts v1.ListOptions) (result *v1alpha1.MetricList, err error) {
+func (c *metrics) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.MetricList, err error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -88,13 +88,13 @@ func (c *metrics) List(opts v1.ListOptions) (result *v1alpha1.MetricList, err er
 		Resource("metrics").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Watch returns a watch.Interface that watches the requested metrics.
-func (c *metrics) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (c *metrics) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -105,30 +105,30 @@ func (c *metrics) Watch(opts v1.ListOptions) (watch.Interface, error) {
 		Resource("metrics").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Watch()
+		Watch(ctx)
 }
 
 // Create takes the representation of a metric and creates it.  Returns the server's representation of the metric, and an error, if there is any.
-func (c *metrics) Create(metric *v1alpha1.Metric) (result *v1alpha1.Metric, err error) {
+func (c *metrics) Create(ctx context.Context, metric *v1alpha1.Metric) (result *v1alpha1.Metric, err error) {
 	result = &v1alpha1.Metric{}
 	err = c.client.Post().
 		Namespace(c.ns).
 		Resource("metrics").
 		Body(metric).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Update takes the representation of a metric and updates it. Returns the server's representation of the metric, and an error, if there is any.
-func (c *metrics) Update(metric *v1alpha1.Metric) (result *v1alpha1.Metric, err error) {
+func (c *metrics) Update(ctx context.Context, metric *v1alpha1.Metric) (result *v1alpha1.Metric, err error) {
 	result = &v1alpha1.Metric{}
 	err = c.client.Put().
 		Namespace(c.ns).
 		Resource("metrics").
 		Name(metric.Name).
 		Body(metric).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
@@ -136,7 +136,7 @@ func (c *metrics) Update(metric *v1alpha1.Metric) (result *v1alpha1.Metric, err 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
 
-func (c *metrics) UpdateStatus(metric *v1alpha1.Metric) (result *v1alpha1.Metric, err error) {
+func (c *metrics) UpdateStatus(ctx context.Context, metric *v1alpha1.Metric) (result *v1alpha1.Metric, err error) {
 	result = &v1alpha1.Metric{}
 	err = c.client.Put().
 		Namespace(c.ns).
@@ -144,24 +144,24 @@ func (c *metrics) UpdateStatus(metric *v1alpha1.Metric) (result *v1alpha1.Metric
 		Name(metric.Name).
 		SubResource("status").
 		Body(metric).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Delete takes name of the metric and deletes it. Returns an error if one occurs.
-func (c *metrics) Delete(name string, options *v1.DeleteOptions) error {
+func (c *metrics) Delete(ctx context.Context, name string, options *v1.DeleteOptions) error {
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("metrics").
 		Name(name).
 		Body(options).
-		Do().
+		Do(ctx).
 		Error()
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *metrics) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
+func (c *metrics) DeleteCollection(ctx context.Context, options *v1.DeleteOptions, listOptions v1.ListOptions) error {
 	var timeout time.Duration
 	if listOptions.TimeoutSeconds != nil {
 		timeout = time.Duration(*listOptions.TimeoutSeconds) * time.Second
@@ -172,12 +172,12 @@ func (c *metrics) DeleteCollection(options *v1.DeleteOptions, listOptions v1.Lis
 		VersionedParams(&listOptions, scheme.ParameterCodec).
 		Timeout(timeout).
 		Body(options).
-		Do().
+		Do(ctx).
 		Error()
 }
 
 // Patch applies the patch and returns the patched metric.
-func (c *metrics) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.Metric, err error) {
+func (c *metrics) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.Metric, err error) {
 	result = &v1alpha1.Metric{}
 	err = c.client.Patch(pt).
 		Namespace(c.ns).
@@ -185,7 +185,7 @@ func (c *metrics) Patch(name string, pt types.PatchType, data []byte, subresourc
 		SubResource(subresources...).
 		Name(name).
 		Body(data).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
